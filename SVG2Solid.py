@@ -6,31 +6,34 @@ def extrudeSVG(filename, thickness):
 
     doc = App.ActiveDocument
 
+    objcnt = len(doc.Objects)
+
     # Import SVG
     importSVG.insert(filename, doc.Name) # returns None
     Gui.SendMsgToActiveView("ViewFit")
     # Get latest object in document:
-    SVG = doc.Objects[-1]
-    # Gui.ActiveDocument.activeObject()
-    # Gui.ActiveDocument.path3400
-    # All objects: App.ActiveDocument.Objects[0] etc
+    for i in range(objcnt, len(doc.Objects)):
+        SVG = doc.Objects[i]
+        # Gui.ActiveDocument.activeObject()
+        # Gui.ActiveDocument.path3400
+        # All objects: App.ActiveDocument.Objects[0] etc
 
-    # Create face, hide SVG
-    tmp = Part.Face(Part.Wire(Part.__sortEdges__(SVG.Shape.Edges)))
-    if tmp.isNull(): raise RuntimeError('Failed to create face')
+        # Create face, hide SVG
+        tmp = Part.Face(Part.Wire(Part.__sortEdges__(SVG.Shape.Edges)))
+        if tmp.isNull(): raise RuntimeError('Failed to create face')
 
-    doc.addObject('Part::Feature', 'SVGFace').Shape = tmp
-    del tmp
-    SVG.ViewObject.Visibility=False
+        SVGFace = doc.addObject('Part::Feature', 'SVGFace')
+        SVGFace.Shape = tmp
+        del tmp
+        SVG.ViewObject.Visibility=False
 
-    # Extrude face
-    SVGFace = doc.Objects[-1]
-    SVGExtrude = doc.addObject("Part::Extrusion", "SVGExtrude")
-    SVGExtrude.Base = doc.SVGFace
-    SVGExtrude.Dir = (0, 0, thickness)
-    SVGExtrude.Solid = (True)
-    SVGExtrude.TaperAngle = (0)
-    doc.SVGFace.ViewObject.Visibility = False
+        # Extrude face
+        SVGExtrude = doc.addObject("Part::Extrusion", "SVGExtrude")
+        SVGExtrude.Base = SVGFace
+        SVGExtrude.Dir = (0, 0, thickness)
+        SVGExtrude.Solid = (True)
+        SVGExtrude.TaperAngle = (0)
+        doc.SVGFace.ViewObject.Visibility = False
     doc.recompute()
 
 # Demo use:
