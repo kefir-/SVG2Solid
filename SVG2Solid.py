@@ -14,6 +14,9 @@ def extrudeSVG(filename, thickness):
     # Get latest object in document:
     for i in range(objcnt, len(doc.Objects)):
         SVG = doc.Objects[i]
+        if 'Shape' not in dir(SVG):
+            print "Skipping object {0}, it has no Shape".format(SVG.Name)
+            continue
         if SVG.Shape.ShapeType not in ('Wire', 'Edge'):
             print "Skipping shape {0} of type {1}".format(SVG.Name, SVG.Shape.ShapeType)
             continue
@@ -21,14 +24,18 @@ def extrudeSVG(filename, thickness):
         # Gui.ActiveDocument.path3400
         # All objects: App.ActiveDocument.Objects[0] etc
 
-        # Create face, hide SVG
-        tmp = Part.Face(Part.Wire(Part.__sortEdges__(SVG.Shape.Edges)))
-        if tmp.isNull(): raise RuntimeError('Failed to create face')
+        # Try to create face, hide SVG
+        try:
+            tmp = Part.Face(Part.Wire(Part.__sortEdges__(SVG.Shape.Edges)))
+            if tmp.isNull(): raise RuntimeError('Failed to create face')
 
-        SVGFace = doc.addObject('Part::Feature', 'SVGFace')
-        SVGFace.Shape = tmp
-        del tmp
-        SVG.ViewObject.Visibility=False
+            SVGFace = doc.addObject('Part::Feature', 'SVGFace')
+            SVGFace.Shape = tmp
+            del tmp
+        except Exception:
+            print "Can't create face from part:", SVG.Name
+        finally:
+            SVG.ViewObject.Visibility=False
 
         # Extrude face
         SVGExtrude = doc.addObject("Part::Extrusion", "SVGExtrude")
