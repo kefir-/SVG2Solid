@@ -14,6 +14,9 @@ def extrudeSVG(filename, thickness):
     # Get latest object in document:
     for i in range(objcnt, len(doc.Objects)):
         SVG = doc.Objects[i]
+        if SVG.Shape.ShapeType not in ('Wire', 'Edge'):
+            print "Skipping shape {0} of type {1}".format(SVG.Name, SVG.Shape.ShapeType)
+            continue
         # Gui.ActiveDocument.activeObject()
         # Gui.ActiveDocument.path3400
         # All objects: App.ActiveDocument.Objects[0] etc
@@ -33,7 +36,7 @@ def extrudeSVG(filename, thickness):
         SVGExtrude.Dir = (0, 0, thickness)
         SVGExtrude.Solid = (True)
         SVGExtrude.TaperAngle = (0)
-        doc.SVGFace.ViewObject.Visibility = False
+        SVGFace.ViewObject.Visibility = False
     doc.recompute()
 
 # Demo use:
